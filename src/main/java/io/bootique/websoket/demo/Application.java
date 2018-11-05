@@ -24,6 +24,7 @@ public class Application implements Module {
         JettyWebSocketModule.extend(binder)
                 .addEndpoint(StreamingEndpoint.class)
                 .addEndpoint(SimpleEndpoint.class);
+
         JettyModule.extend(binder)
         .addStaticServlet("content", "/content/*");
     }

@@ -1,4 +1,4 @@
-package io.bootique.websoket.demo;
+package io.bootique.websoket.demo.generator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

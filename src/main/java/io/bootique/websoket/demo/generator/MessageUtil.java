@@ -1,4 +1,4 @@
-package io.bootique.websoket.demo;
+package io.bootique.websoket.demo.generator;
 
 import com.google.gson.Gson;
 

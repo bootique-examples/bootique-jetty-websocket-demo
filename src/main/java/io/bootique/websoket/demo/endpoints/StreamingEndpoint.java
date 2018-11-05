@@ -1,6 +1,6 @@
 package io.bootique.websoket.demo.endpoints;
 
-import io.bootique.websoket.demo.RandomPriceGenerator;
+import io.bootique.websoket.demo.generator.RandomPriceGenerator;
 
 import javax.websocket.CloseReason;
 import javax.websocket.OnClose;
@@ -15,39 +15,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static io.bootique.websoket.demo.MessageUtil.*;
+import static io.bootique.websoket.demo.generator.MessageUtil.*;
 
 @ServerEndpoint("/ws/basic")
 public class StreamingEndpoint {
 
     private RandomPriceGenerator gen;
     private Map<String, SubscriptionInfo> subscriptions = new ConcurrentHashMap<>();
-
-    public StreamingEndpoint() {
-        this.gen = new RandomPriceGenerator(10);
-        gen.addListener((symbol, data) -> {
-            System.out.println("SEND "+ symbol + " " + data);
-            toLowerCase(data);
-
-            SubscriptionInfo sub = subscriptions.get(symbol);
-            if (sub != null) {
-                synchronized (sub) {
-                    sub.sessions.keySet().forEach(s -> send(s, symbol, data));
-                }
-            }
-        });
-        gen.start();
-    }
-
-    private ExecutorService exec = Executors.newCachedThreadPool();
-
-    public static class SubscriptionInfo {
-        Map<Session, SessionInfo> sessions = new HashMap<>();
-    }
-
-    public static class SessionInfo {
-        // Nothing to store now
-    }
 
     @OnOpen
     public void onWebSocketConnect(Session sess) {
@@ -85,6 +59,32 @@ public class StreamingEndpoint {
         cause.printStackTrace(System.err);
     }
 
+
+    public StreamingEndpoint() {
+        this.gen = new RandomPriceGenerator(10);
+        gen.addListener((symbol, data) -> {
+            System.out.println("SEND "+ symbol + " " + data);
+            toLowerCase(data);
+
+            SubscriptionInfo sub = subscriptions.get(symbol);
+            if (sub != null) {
+                synchronized (sub) {
+                    sub.sessions.keySet().forEach(s -> send(s, symbol, data));
+                }
+            }
+        });
+        gen.start();
+    }
+
+    private ExecutorService exec = Executors.newCachedThreadPool();
+
+    public static class SubscriptionInfo {
+        Map<Session, SessionInfo> sessions = new HashMap<>();
+    }
+
+    public static class SessionInfo {
+        // Nothing to store now
+    }
 
     private void send(Session s, String symbol, Map<String, String> data) {
         exec.submit(() -> {
